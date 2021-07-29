@@ -1,112 +1,73 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- * @flow strict-local
- */
+import messaging from '@react-native-firebase/messaging';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import React, {useEffect} from 'react';
+import {Provider} from 'react-redux';
+import HomeBottomTabScreen from './src/screens/HomeBottomTabScreen/HomeBottomTabScreen';
+import LoginScreen from './src/screens/LoginScreen/LoginScreen';
+import RegistrationScreen from './src/screens/RegistrationScreen/RegistrationScreen';
+import store from './src/store';
 
-import React from 'react';
-import type {Node} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+// webrtc push notification icon location
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+const Stack = createStackNavigator();
 
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-};
+export default function App() {
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('A new FCM message arrived!', JSON.stringify(remoteMessage));
+      // Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    });
+    return unsubscribe;
+  }, []);
 
-const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  // useEffect(() => {
+  //   const FIREBASE_API_KEY =
+  //     'AAAAErsIZ9o:APA91bGQvDAIofTk-JJnvBaCYGicl9CTCGhWmUgXuvbBpBTR5UGtG44cwacAI2vAAA10i7QHIhi0x6hk3lW3VG8TUic7mJoBpPNBQK9sEoYz_7DHrSgmMFvO33AaTrWh9D-GRbPOPbCp';
+  //   const message = JSON.stringify({
+  //     registration_ids: [
+  //       'cRoTWZruRUCkEJ7zOvsM3r:APA91bFbzrIlR-bgnXYYL0Sg7pP41h5AomAw4WGp90dT4zHrFONOsg1jaT-RG49KciuYI2uKsrqnYc2oMLmwST3ciT2iBW0p2_VtQj2fob0wnGFDrc6oGpaMw-8am3_enVoXiZICnlcN',
+  //     ],
+  //     notification: {
+  //       title: 'FCM Message',
+  //       body: 'This is an FCM notification message!',
+  //     },
+  //   });
+  //   const requestOptions = {
+  //     method: 'POST',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       Authorization: 'key=' + FIREBASE_API_KEY,
+  //     },
+  //     body: message,
+  //   };
+  //   fetch('https://fcm.googleapis.com/fcm/send', requestOptions)
+  //     .then((response) => response.json())
+  //     .then((data) => console.log('data: ', data))
+  //     .catch((error) => {
+  //       console.error(error);
+  //     });
+  // }, []);
 
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <Provider store={store}>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Login">
+          <Stack.Screen name="Home" options={{headerShown: false}}>
+            {props => <HomeBottomTabScreen {...props} />}
+          </Stack.Screen>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="Registration"
+            component={RegistrationScreen}
+            options={{headerShown: false}}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
-};
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
-
-export default App;
+}
